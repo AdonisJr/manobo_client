@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import axios from 'axios';
 
 export default function Login() {
     const [ credential, setCredential ] = useState({
@@ -18,15 +19,10 @@ export default function Login() {
       // Submit function
       const handleSubmit = async (e) =>{
           e.preventDefault();
-          await fetch('/api/auth',{
-            method: 'post',
-            headers: {
-              'Content-typ': 'application/json'
-            },
-            body: JSON.stringify(credential)
-          })
-          .then(res => res.json())
-          .then(credential => console.log(credential))
+          console.log(credential)
+        axios.post('/api/auth', credential)
+          .then(res => console.log(res))
+          .catch(error => console.log(error))
       }
   return (
     <section className="h-screen">
@@ -44,7 +40,6 @@ export default function Login() {
             {/* <!-- Right column container --> */}
             <div className="mb-12 md:mb-0 md:w-8/12 lg:w-5/12 xl:w-5/12">
               <form onSubmit={handleSubmit}>
-                {/* <!-- Separator between social media sign in and email/password sign in --> */}
                 <div className="my-4 flex items-center before:mt-0.5 before:flex-1 before:border-t before:border-neutral-300 after:mt-0.5 after:flex-1 after:border-t after:border-neutral-300">
                   <p className="mx-4 mb-0 text-center font-semibold dark:text-white">
                     SIGN IN
