@@ -90,7 +90,7 @@ export default function Announcement({ user, accessToken }) {
 
             <div className='flex justify-between py-4 border-b-2 border-slate-200 px-5 text-xs'>
                 <p className='font-semibold p-2 text-sm'>CONTENT LIST</p>
-                <button className='bg-indigo-500 text-white font-bold hover:bg-indigo-600 p-2 rounded-lg duration-200 w-20'
+                <button className='bg-emerald-500 text-white font-bold hover:bg-emerald-600 p-2 rounded-lg duration-200 w-20'
                     onClick={(e) => setModal(true)}>
                     ADD
                 </button>

@@ -112,14 +112,14 @@ export default function AnnouncementForm({ user, accessToken, setModal, getAnnou
                     </div>
                     <div>
                         <button onClick={handleSubmit}
-                            className='bg-blue-400 text-white font-bold p-2 w-full hover:bg-blue-500 duration-200'>
+                            className='bg-emerald-400 text-white font-bold p-2 w-full hover:bg-emerald-500 duration-200'>
                             Submit
                         </button>
                     </div>
 
                 </div>
             </div>
-            <div className='w-full h-full fixed top-0 left-0 bg-indigo-900 z-40 opacity-40'>
+            <div className='w-full h-full fixed top-0 left-0 bg-emerald-900 z-40 opacity-40'>
 
             </div>
         </>
