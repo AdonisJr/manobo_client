@@ -127,21 +127,32 @@ export default function FamilyTree({ user, accessToken }) {
     const details = credentials.value;
 
     await axios
-      .get(`/user/all`, {
+      .get(`/relationship?user_id=${details.id}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
-        params: {
-          id: details.id,
-          middle_name: details.middle_name,
-          last_name: details.last_name,
-
-        }
-      }).then(res => {
+      })
+      .then((res) => {
         setDatas(res.data.data)
       }).catch(error => {
         console.log(error)
       })
+    // await axios
+    //   .get(`/user/all`, {
+    //     headers: {
+    //       Authorization: `Bearer ${accessToken}`,
+    //     },
+    //     params: {
+    //       id: details.id,
+    //       middle_name: details.middle_name,
+    //       last_name: details.last_name,
+
+    //     }
+    //   }).then(res => {
+    //     setDatas(res.data.data)
+    //   }).catch(error => {
+    //     console.log(error)
+    //   })
   }
 
   useEffect(() => {
@@ -216,6 +227,7 @@ export default function FamilyTree({ user, accessToken }) {
                 <th className='p-2'>ID</th>
                 <th>Name</th>
                 <th>Email</th>
+                <th>Relationship</th>
                 <th>Gender</th>
                 <th>Contact Number</th>
                 <th>Other Information</th>
@@ -227,8 +239,9 @@ export default function FamilyTree({ user, accessToken }) {
                   datas.map(data => (
                     <tr className='hover:bg-emerald-100 text-center'>
                       <td className='p-1'>{data.id}</td>
-                      <td className='p-1'>{data.email}</td>
                       <td className='p-1'>{`${data.first_name} ${data.middle_name} ${data.last_name}`}</td>
+                      <td className='p-1'>{data.email}</td>
+                      <td className='p-1'>{data.relationship}</td>
                       <td className='p-1'>{data.gender}</td>
                       <td className='p-1'>{data.phone_number}</td>
                       <td><p className='hover:underline cursor-pointer' onClick={(e) => [setShowOtherInfo(true), setMemberSelected(data)]}>View</p></td>

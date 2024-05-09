@@ -4,13 +4,16 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Select from "react-select";
 import { useReactToPrint } from 'react-to-print';
+import OtherInfoForm from './OtherInfoForm';
 
-export default function OtherInfo({ setInformation, isAdmin, user, setMemberSelected, accessToken, setSelected}) {
+export default function OtherInfo({ setInformation, isAdmin, user, setMemberSelected, accessToken, setSelected }) {
     const [credentials, setCredentials] = useState({ ...user, user_id: user.id });
     const [isUpdate, setIsUpdate] = useState(false)
     const [accountDetails, setAccountDetails] = useState(user)
+    const [isFamily, setIsFamily] = useState(false);
+    const [relationship, setRelationship] = useState(null);
+    const [deleteSelected, setDeleteSelected] = useState(null);
     const printRef = React.useRef();
-console.log(user)
     const handlePrint = useReactToPrint({
         content: () => printRef.current,
         pageStyle: `
@@ -64,7 +67,6 @@ console.log(user)
         { label: 'male', value: "male" },
         { label: 'female', value: 'female' }
     ]
-    console.log(user)
     // TOAST
     const showErrorMessage = (message) => {
         toast.error(message, {
@@ -152,6 +154,22 @@ console.log(user)
 
 
     }
+
+    const handleDelete = async (id) => {
+        if (!id) return
+        await axios.delete(`/relationship?id=${id}`, {
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+            },
+        }).then(res => {
+            showSuccessMessage(res.data.message)
+            setTimeout(() => {
+                getRelationship();
+            }, 1000)
+        }).catch(error => {
+            console.log(error)
+        })
+    }
     const getOtherInfo = async () => {
         await axios
             .get(`/otherInfo/${user.id}`, {
@@ -168,15 +186,34 @@ console.log(user)
                 setIsUpdate(false)
             })
     }
+
+    const getRelationship = async () => {
+        await axios
+            .get(`/relationship?user_id=${user.id}`, {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                },
+            })
+            .then((res) => {
+                setRelationship(res.data.data)
+            }).catch(error => {
+                console.log(error)
+            })
+    }
     useEffect(() => {
+        getRelationship();
         getOtherInfo();
     }, [])
-    useEffect(() => { console.log(credentials) }, [credentials])
     return (
         <>
             <div className='z-30 absolute top-0 left-0 flex justify-center items-center w-screen h-screen p-5'>
                 <ToastContainer />
+
                 <div className='relative bg-white p-2 z-50 rounded-lg w-5/6 border-4 h-full overflow-y-scroll border-slate-200' ref={printRef}>
+                    {
+                        !isFamily ? "" :
+                            <OtherInfoForm user={user} accessToken={accessToken} setIsFamily={setIsFamily} getRelationship={getRelationship} />
+                    }
                     <svg xmlns="http://www.w3.org/2000/svg"
                         width="25"
                         height="25"
@@ -187,8 +224,8 @@ console.log(user)
                     >
                         <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708" />
                     </svg>
-                    <div className='flex gap-10 border-b-2 p-2 border-slate-600'>
-                        <p className='text-lg font-semibold'>Account Information |</p>
+                    <div className='flex gap-10'>
+                        <p className='text-lg font-semibold text-emerald-500'>Account Information |</p>
                         <button
                             className='flex gap-2 items-center hover:text-slate-600 duration-200'
                             onClick={handlePrint}
@@ -201,7 +238,7 @@ console.log(user)
                         </button>
                     </div>
                     {/* sec1 */}
-                    <div className='flex gap-2 py-2'>
+                    <div className='flex gap-2 py-2 border-t-2 border-slate-200'>
                         <div className="flex w-3/12 flex-col">
                             <label className="ps-2">First Name</label>
                             <input
@@ -248,7 +285,7 @@ console.log(user)
                         </div>
                     </div>
                     {/* sec2 */}
-                    <div className='flex gap-2 py-2'>
+                    <div className='flex gap-2 py-2 border-b-2 border-slate-200'>
 
                         <div className="flex w-4/12 flex-col">
                             <label className="ps-2">Email</label>
@@ -302,9 +339,64 @@ console.log(user)
                             />
                         </div>
                     </div>
+                    {/* FAMILY TREE */}
+                    <div className='flex flex-col gap-2 border-b-2 p-2 py-4 border-slate-200'>
+                        <div className='flex justify-between items-center pe-4'>
+                            <p className='text-lg font-semibold text-emerald-500'>Family Tree</p>
+                            <p className='text-xs font-bold bg-emerald-500 py-1 px-3 text-white rounded-md cursor-pointer hover:bg-emerald-600 duration-200'
+                                onClick={(e) => setIsFamily(true)}
+                            >ADD
+                            </p>
+                        </div>
+                        <table>
+                            <thead>
+                                <tr className='bg-blue-50'>
+                                    <th>First Name</th>
+                                    <th>Middle Name</th>
+                                    <th>Last Name</th>
+                                    <th>Relationship</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {
+                                    !relationship ?
+                                        <tr>
+                                            <td></td>
+                                            <td className='p-1'>No Data</td>
+                                        </tr> :
+                                        relationship.map(data => (
+                                            <tr className='text-center bg-slate-50'>
+                                                <td className='p-1'>{data.first_name}</td>
+                                                <td className='p-1'>{data.middle_name}</td>
+                                                <td>{data.last_name}</td>
+                                                <td>{data.relationship}</td>
+                                                <td>
+                                                    <div className='flex items-center cursor-pointer'
+                                                        onClick={(e) => handleDelete(data.rel_id)}>
+                                                        <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            width="16"
+                                                            height="16"
+                                                            fill="currentColor"
+                                                            className="bi bi-trash2-fill text-red-500 cursor-pointer"
+                                                            viewBox="0 0 16 16"
+                                                        >
+                                                            <path d="M2.037 3.225A.703.703 0 0 1 2 3c0-1.105 2.686-2 6-2s6 .895 6 2a.702.702 0 0 1-.037.225l-1.684 10.104A2 2 0 0 1 10.305 15H5.694a2 2 0 0 1-1.973-1.671L2.037 3.225zm9.89-.69C10.966 2.214 9.578 2 8 2c-1.58 0-2.968.215-3.926.534-.477.16-.795.327-.975.466.18.14.498.307.975.466C5.032 3.786 6.42 4 8 4s2.967-.215 3.926-.534c.477-.16.795-.327.975-.466-.18-.14-.498-.307-.975-.466z" />
+                                                        </svg>
+                                                        Delete
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))
+                                }
+
+                            </tbody>
+                        </table>
+                    </div>
                     {/* header2 */}
-                    <div className='border-b-2 p-2 border-slate-600'>
-                        <p className='text-lg font-semibold'>Other Information</p>
+                    <div className=''>
+                        <p className='text-lg font-semibold text-emerald-500'>Other Information</p>
                     </div>
                     {/* sec */}
                     <div className='flex gap-2 py-2 px-5 border-b-2 border-slate-200'>
@@ -577,7 +669,7 @@ console.log(user)
                                     className="shadow-md px-3 py-1 rounded-md border-2 border-slate-400 cursor-pointer"
                                     name='philhealth'
                                     onChange={handlePhilhealth}
-                                    checked={credentials.philhealth === '1'}
+                                    checked={credentials.philhealth == 1}
                                 />Philhealth
                             </div>
                             <div>
@@ -587,7 +679,7 @@ console.log(user)
                                     className="shadow-md px-3 py-1 rounded-md border-2 border-slate-400 cursor-pointer"
                                     name='fourps'
                                     onClick={handleFourps}
-                                    checked={credentials.fourps === '1'}
+                                    checked={credentials.fourps == 1}
                                 />Pantawind Pamilya Pilipino Program
                             </div>
                             <div>
@@ -597,7 +689,7 @@ console.log(user)
                                     className="shadow-md px-3 py-1 rounded-md border-2 border-slate-400 cursor-pointer"
                                     name='senior_citizen'
                                     onClick={handleSenior}
-                                    checked={credentials.senior_citizen === '1'}
+                                    checked={credentials.senior_citizen == 1}
                                 />Senior Citizen
                             </div>
                             <div>
@@ -607,7 +699,7 @@ console.log(user)
                                     className="shadow-md px-3 py-1 rounded-md border-2 border-slate-400 cursor-pointer"
                                     name='pensioner'
                                     onClick={handlePensioner}
-                                    checked={credentials.senior_citizen === '1'}
+                                    checked={credentials.pensioner == 1}
                                 />Pensioner
                             </div>
                             <div className='flex gap-2 items-center w-full'>

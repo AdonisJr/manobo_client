@@ -1,0 +1,124 @@
+import React, { useEffect, useState } from 'react'
+import axios from 'axios'
+import Select from 'react-select';
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
+export default function BurialForm({ user, accessToken, getBurials, setIsShowForm }) {
+    const [datas, setDatas] = useState([])
+    const [credentials, setCredentials] = useState(user);
+    const [files1, setFiles1] = useState(null);
+    const [files2, setFiles2] = useState(null);
+    const [files3, setFiles3] = useState(null);
+    const [files4, setFiles4] = useState(null);
+
+    // TOAST
+    const showErrorMessage = (message) => {
+        toast.error(message, {
+            position: toast.POSITION.TOP_LEFT,
+            autoClose: 2000,
+        });
+    };
+    const showSuccessMessage = (message) => {
+        toast.success(message, {
+            position: toast.POSITION.TOP_LEFT,
+            autoClose: 2000,
+        });
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (!files1 || !files2) return showErrorMessage("Error, please upload file/image")
+
+        const filesData = new FormData();
+        filesData.append('files', files1);
+        filesData.append('files', files2);
+        filesData.append('files', files3);
+        filesData.append('files', files4);
+
+        // Append other form data fields
+        Object.entries(credentials).forEach(([key, value]) => {
+            filesData.append(key, value);
+        });
+
+        await axios.post(`/burial`, filesData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        }).then(res => {
+            showSuccessMessage(res.data.message)
+            setFiles1(null)
+            setFiles2(null)
+            setTimeout(() => {
+                getBurials();
+                setIsShowForm(false)
+            }, 1000)
+        }).catch(error => {
+            showErrorMessage(error.response.data.message)
+        })
+    }
+
+
+    return (
+        <>
+            <div className='absolute top-0 left-0 flex w-full h-full p-10 justify-center items-center z-40'>
+
+                <ToastContainer />
+                <div className='relative flex flex-col gap-3 bg-white p-5 w-3/6 shadow-lg'>
+                    <p className='text-lg font-bold'>Burial Assistance Form</p>
+                    <p className='absolute top-3 right-5 text-lg cursor-pointer hover:text-slate-400 duration-200'
+                        onClick={(e) => setIsShowForm(false)}
+                    >x</p>
+                    <div className='flex items-center justify-between pt-5 gap-2'>
+                        <p className='ps-2'>Name</p>
+                        <input
+                            type="text"
+                            placeholder="Taylor"
+                            className="shadow-md px-3 py-1 rounded-md border-2 border-slate-400 w-5/6"
+                            value={`${credentials.first_name + credentials.middle_name + " " + credentials.last_name}`}
+                            disabled
+                        />
+                    </div>
+                    <div className='flex items-center justify-between gap-2'>
+                        <p className='ps-2'>Application Letter</p>
+                        <input
+                            type="file"
+                            className="px-3 py-1 rounded-md w-5/6"
+                            onChange={(e) => setFiles1(e.target.files[0])}
+                        />
+                    </div>
+                    <div className='flex items-center justify-between gap-2'>
+                        <p className='ps-2'>Death Certificate</p>
+                        <input
+                            type="file"
+                            className="px-3 py-1 rounded-md w-5/6"
+                            onChange={(e) => setFiles2(e.target.files[0])}
+                        />
+                    </div>
+                    <div className='flex items-center justify-between gap-2'>
+                        <p className='ps-2'>Barangay Indigency</p>
+                        <input
+                            type="file"
+                            className="px-3 py-1 rounded-md w-5/6"
+                            onChange={(e) => setFiles3(e.target.files[0])}
+                        />
+                    </div>
+                    <div className='flex items-center justify-between gap-2'>
+                        <p className='ps-2'>Valid I.D</p>
+                        <input
+                            type="file"
+                            className="px-3 py-1 rounded-md w-5/6"
+                            onChange={(e) => setFiles4(e.target.files[0])}
+                        />
+                    </div>
+                    <p className='py-2 text-white text-center bg-emerald-500 hover:bg-emerald-600 duration-200 cursor-pointer'
+                        onClick={handleSubmit}>Submit</p>
+                </div>
+            </div>
+            <div className='absolute top-0 left-0 w-full h-full bg-emerald-800 opacity-25 z-20'>
+
+            </div>
+        </>
+
+    )
+}

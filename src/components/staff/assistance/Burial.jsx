@@ -34,18 +34,18 @@ export default function Burial({ user, accessToken }) {
   const handleConfirm = async () => {
     // Perform delete operation or call the delete function
     await axios
-      .delete(`/assistance?id=${deleteSelected.id}`, {
+      .delete(`/burial?id=${deleteSelected}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         }
       })
       .then((res) => {
         showSuccessMessage(res.data.message)
-        setTotalPages(Math.ceil(res.data.totalCount / 5))
+        setConfirm(false);
+        getData();
       }).catch(error => {
         showErrorMessage(error.response.data.error + error.response.data.message)
       })
-    setConfirm(false);
   };
 
   const handleCancel = () => {
@@ -72,7 +72,7 @@ export default function Burial({ user, accessToken }) {
 
   const getData = async () => {
     await axios
-      .get(`/assistance/all`, {
+      .get(`/burial/all`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
@@ -89,12 +89,54 @@ export default function Burial({ user, accessToken }) {
       })
   }
 
+  
+  const generateRandomFilename = () => {
+    const randomString = Math.random().toString(36).substring(7); // Random alphanumeric string
+    return randomString;
+  };
+
+  const handleDownload = (data, extension) => {
+    // Base64 encoded string
+    const randomFilename = generateRandomFilename();
+    const base64String = data;
+
+    // Create a Blob from the Base64 encoded string
+    const byteCharacters = atob(base64String);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    const blob = new Blob([byteArray], { type: 'application/octet-stream' });
+
+    // Create object URL for the blob
+    const url = window.URL.createObjectURL(blob);
+
+    // Create temporary anchor element
+    const a = document.createElement("a");
+    a.style.display = "none";
+    document.body.appendChild(a);
+
+    // Set the download attribute and href of the anchor element
+    a.href = url;
+    a.download = `${randomFilename}.${extension}`;
+
+    // Simulate click on the anchor element
+    a.click();
+
+    // Clean up
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+  };
+
+
   useEffect(() => {
     getData();
   }, [refresh])
 
   return (
     <div className='flex flex-col gap-2'>
+      <ToastContainer />
       {showConfirm ?
         <CustomConfirmModal
           message={`Are you sure you wan't to delete?`}
@@ -106,7 +148,7 @@ export default function Burial({ user, accessToken }) {
       }
       {
         !isModalOpen ? "" :
-          <AssistanceForm accessToken={accessToken} user={useEffect} selected={selected} setSelected={setSelected} setModal={setModal} getData={getData} />
+          <AssistanceForm accessToken={accessToken} user={useEffect} type={'burial'} selected={selected} setSelected={setSelected} setModal={setModal} getData={getData} />
       }
       {/* table */}
       <div className='flex flex-col gap-2 bg-white p-5 rounded-lg shadow-md'>
@@ -139,30 +181,30 @@ export default function Burial({ user, accessToken }) {
                       <td className='p-2'>{data.id}</td>
                       <td>{data.type}</td>
                       <td>{data.first_name + ", " + data.last_name}</td>
-                      <td className='text-xs'>
-                        <span className={`p-1 ${data.application_letter === 'Not Submitted' ? 'bg-red-200' : 'bg-emerald-200'}`}>
-                          {data.application_letter}
-                        </span>
+                      <td onClick={(e) => handleDownload(data.application_letter, data.application_extension)}>
+                        <p className={`${data.application_letter ? 'hover:underline cursor-pointer text-blue-600' : ''}`}>
+                          {data.application_letter ? "Download" : "Not Submitted"}
+                        </p>
                       </td>
-                      <td className='text-xs'>
-                        <span className={`p-1 ${data.death_certificate === 'Not Submitted' ? 'bg-red-200' : 'bg-emerald-200'}`}>
-                          {data.death_certificate}
-                        </span>
+                      <td onClick={(e) => handleDownload(data.death_certificate, data.death_extension)}>
+                        <p className={`${data.death_certificate ? 'hover:underline cursor-pointer text-blue-600' : ''}`}>
+                          {data.death_certificate ? "Download" : "Not Submitted"}
+                        </p>
                       </td>
-                      <td className='text-xs'>
-                        <span className={`p-1 ${data.indigency === 'Not Submitted' ? 'bg-red-200' : 'bg-emerald-200'}`}>
-                          {data.indigency}
-                        </span>
+                      <td onClick={(e) => handleDownload(data.indigency, data.indigency_extension)}>
+                        <p className={`${data.indigency ? 'hover:underline cursor-pointer text-blue-600' : ''}`}>
+                          {data.indigency ? "Download" : "Not Submitted"}
+                        </p>
                       </td>
-                      <td className='text-xs'>
-                        <span className={`p-1 ${data.valid_id === 'Not Submitted' ? 'bg-red-200' : 'bg-emerald-200'}`}>
-                          {data.valid_id}
-                        </span>
+                      <td onClick={(e) => handleDownload(data.valid_id, data.valid_extension)}>
+                        <p className={`${data.valid_id ? 'hover:underline cursor-pointer text-blue-600' : ''}`}>
+                          {data.valid_id ? "Download" : "Not Submitted"}
+                        </p>
                       </td>
                       <td className='p-1'>{getSpecificDate(data.created_at)}</td>
                       <td className='p-1'>{data.remarks}</td>
                       <td>
-                        <span className={`text-xs p-1 ${data.status === 'COMPLETED' ? 'bg-emerald-200' : 'bg-red-200'}`}>
+                        <span>
                           {data.status}
                         </span>
                       </td>

@@ -4,11 +4,13 @@ import "react-toastify/dist/ReactToastify.css";
 import Select from "react-select";
 import axios from 'axios';
 import CustomConfirmModal from '../CustomConfirmModal';
+import MedicalForm from './MedicalForm';
 
 export default function SchoolarshipAssistance({ user, accessToken }) {
   const [showConfirm, setConfirm] = useState(false);
   const [refresh, setRefresh] = useState(false);
-  const [schoolarship, setSchoolarship] = useState([])
+  const [medical, setMedical] = useState([])
+  const [isShowForm, setIsShowForm] = useState(false);
 
   // TOAST
   const showErrorMessage = (message) => {
@@ -27,7 +29,7 @@ export default function SchoolarshipAssistance({ user, accessToken }) {
   const handleConfirm = async () => {
     // Perform delete operation or call the delete function
     await axios
-      .post(`/assistance`, { user_id: user.id, type: 'medical'}, {
+      .post(`/assistance`, { user_id: user.id, type: 'medical' }, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
@@ -63,18 +65,58 @@ export default function SchoolarshipAssistance({ user, accessToken }) {
   };
 
   const getMedical = async () => {
-    await axios
-      .get(`/assistance/${user.id}?type=medical`, {
+    const res = await axios
+      .get(`/medical`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
       })
       .then((res) => {
-        setSchoolarship(res.data.data)
+        setMedical(res.data.data)
       }).catch(error => {
         console.log(error.response.data.error + error.response.data.message)
       })
   }
+
+
+  const generateRandomFilename = () => {
+    const randomString = Math.random().toString(36).substring(7); // Random alphanumeric string
+    return randomString;
+  };
+
+  const handleDownload = (data, extension) => {
+    // Base64 encoded string
+    const randomFilename = generateRandomFilename();
+    const base64String = data;
+
+    // Create a Blob from the Base64 encoded string
+    const byteCharacters = atob(base64String);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    const blob = new Blob([byteArray], { type: 'application/octet-stream' });
+
+    // Create object URL for the blob
+    const url = window.URL.createObjectURL(blob);
+
+    // Create temporary anchor element
+    const a = document.createElement("a");
+    a.style.display = "none";
+    document.body.appendChild(a);
+
+    // Set the download attribute and href of the anchor element
+    a.href = url;
+    a.download = `${randomFilename}.${extension}`;
+
+    // Simulate click on the anchor element
+    a.click();
+
+    // Clean up
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+  };
 
   useEffect(() => {
     getMedical();
@@ -93,6 +135,10 @@ export default function SchoolarshipAssistance({ user, accessToken }) {
             onCancel={handleCancel}
           /> : ''
         }
+        {
+          !isShowForm ? "" :
+            <MedicalForm user={user} accessToken={accessToken} getMedical={getMedical} setIsShowForm={setIsShowForm} />
+        }
         <div className='py-5'>
           <p className='text-xl font-bold'>Requirements:</p>
         </div>
@@ -104,7 +150,8 @@ export default function SchoolarshipAssistance({ user, accessToken }) {
           </p>
         </div>
         <div className='flex justify-center p-5'>
-          <button className='bg-emerald-500 p-2 w-3/6 text-white font-bold rounded-md hover:bg-emerald-600 duration-200' onClick={(e) => setConfirm(true)}>Request</button>
+          <button className='bg-emerald-500 p-2 w-3/6 text-white font-bold rounded-md hover:bg-emerald-600 duration-200'
+            onClick={(e) => setIsShowForm(true)}>Request</button>
         </div>
       </div>
       {/* table */}
@@ -113,28 +160,34 @@ export default function SchoolarshipAssistance({ user, accessToken }) {
           <p className='font-bold'>Medical Requested List</p>
         </div>
         <div>
-          <table className='w-full table table-auto'>
+          <table className='w-full table table-auto text-xs'>
             <thead>
               <tr className='bg-blue-50'>
                 <td className='p-2'>ID</td>
                 <td>Application Letter</td>
                 <td>Medical Abstract</td>
                 <td>Date Requested</td>
-                <td>Status</td>
                 <td>Remarks</td>
+                <td>Status</td>
               </tr>
             </thead>
             <tbody>
               {
-                !schoolarship ? "" :
-                  schoolarship.map(data => (
+                !medical ? "" :
+                  medical.map(data => (
                     <tr className='hover:bg-emerald-100'>
                       <td className='p-2'>{data.id}</td>
-                      <td>{data.application_letter}</td>
-                      <td>{data.medical_abstract}</td>
+                      <td onClick={(e) => handleDownload(data.application_letter, data.application_extension)}>
+                        <p className={`${data.application_letter ? 'hover:underline cursor-pointer text-blue-600' : ''}`}>
+                          {data.application_letter ? "Download" : "Not Submitted"}
+                        </p>
+                      </td>
+                      <td onClick={(e) => handleDownload(data.medical_abstract, data.medical_extension)}>
+                        <p className={`${data.medical_abstract ? 'hover:underline cursor-pointer text-blue-600' : ''}`}>{data.medical_abstract ? "Download" : "Not Submitted"}</p>
+                      </td>
                       <td>{getSpecificDate(data.created_at)}</td>
-                      <td>{data.status}</td>
                       <td>{data.remarks}</td>
+                      <td>{data.status}</td>
                     </tr>
                   ))
               }

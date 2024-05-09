@@ -37,9 +37,6 @@ export default function Staff() {
   const handleValidated = (value) => {
     setValidated(value)
   }
-  useEffect(() => {
-  }, []);
-
   // handle FUNCTIONS
 
   const handleActivePage = (page) => {
@@ -72,7 +69,7 @@ export default function Staff() {
       }
     };
     getUser();
-  }, [cookies]);
+  }, []);
 
   return (
     <main className="flex min-h-screen max-w-screen gap-5 bg-slate-900 overflow-hidden font-serif">

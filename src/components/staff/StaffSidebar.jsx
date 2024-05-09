@@ -1,7 +1,10 @@
 import React from "react";
 import Cookies from "universal-cookie";
+import { useNavigate } from "react-router-dom";
 
 export default function StaffSidebar({ activePage, handleActivePage, user, setUser, setAccessToken }) {
+  
+  const navigate = useNavigate();
 
   const cookies = new Cookies({ path: "/" });
   return (
@@ -23,7 +26,7 @@ export default function StaffSidebar({ activePage, handleActivePage, user, setUs
             <path d="M3.5 2A1.5 1.5 0 0 1 5 3.5V5H3.5a1.5 1.5 0 1 1 0-3M6 5V3.5A2.5 2.5 0 1 0 3.5 6H5v4H3.5A2.5 2.5 0 1 0 6 12.5V11h4v1.5a2.5 2.5 0 1 0 2.5-2.5H11V6h1.5A2.5 2.5 0 1 0 10 3.5V5zm4 1v4H6V6zm1-1V3.5A1.5 1.5 0 1 1 12.5 5zm0 6h1.5a1.5 1.5 0 1 1-1.5 1.5zm-6 0v1.5A1.5 1.5 0 1 1 3.5 11z" />
           </svg>
           Dashboard
-        </button>   
+        </button>
 
         <button
           className={`flex gap-2 items-center w-full text-white text-start hover:bg-emerald-500 hover:text-white duration-200 rounded-md p-2 ${activePage === "Announcements" ? "text-white bg-emerald-500" : "text-black"
@@ -151,6 +154,7 @@ export default function StaffSidebar({ activePage, handleActivePage, user, setUs
             cookies.remove("user");
             setUser({});
             setAccessToken('');
+            navigate("/")
           }}>
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-box-arrow-right" viewBox="0 0 16 16">
             <path fill-rule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0z" />

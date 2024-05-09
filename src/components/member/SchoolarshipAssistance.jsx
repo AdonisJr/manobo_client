@@ -4,11 +4,13 @@ import "react-toastify/dist/ReactToastify.css";
 import Select from "react-select";
 import axios from 'axios';
 import CustomConfirmModal from '../CustomConfirmModal';
+import AssistanceForm from './AssistanceForm';
 
 export default function SchoolarshipAssistance({ user, accessToken }) {
   const [showConfirm, setConfirm] = useState(false);
   const [refresh, setRefresh] = useState(false);
   const [schoolarship, setSchoolarship] = useState([])
+  const [isShowForm, setIsShowForm] = useState(false);
 
   // TOAST
   const showErrorMessage = (message) => {
@@ -27,7 +29,7 @@ export default function SchoolarshipAssistance({ user, accessToken }) {
   const handleConfirm = async () => {
     // Perform delete operation or call the delete function
     await axios
-      .post(`/assistance`, { user_id: user.id, type: 'schoolarship' }, {
+      .post(`/schoolarship`, { user_id: user.id, type: 'schoolarship' }, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
@@ -62,9 +64,9 @@ export default function SchoolarshipAssistance({ user, accessToken }) {
     return longDate;
   };
 
-  const getSchollarship = async() =>{
-    await axios
-      .get(`/assistance/${user.id}?type=schoolarship`, {
+  const getSchollarship = async () => {
+    const res = await axios
+      .get(`/schoolarship`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
@@ -76,9 +78,48 @@ export default function SchoolarshipAssistance({ user, accessToken }) {
       })
   }
 
-  useEffect(()=>{
+  const generateRandomFilename = () => {
+    const randomString = Math.random().toString(36).substring(7); // Random alphanumeric string
+    return randomString;
+};
+
+  const handleDownload = (data, extension) => {
+    // Base64 encoded string
+    const randomFilename = generateRandomFilename();
+    const base64String = data;
+
+    // Create a Blob from the Base64 encoded string
+    const byteCharacters = atob(base64String);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    const blob = new Blob([byteArray], { type: 'application/octet-stream' });
+
+    // Create object URL for the blob
+    const url = window.URL.createObjectURL(blob);
+
+    // Create temporary anchor element
+    const a = document.createElement("a");
+    a.style.display = "none";
+    document.body.appendChild(a);
+
+    // Set the download attribute and href of the anchor element
+    a.href = url;
+    a.download = `${randomFilename}.${extension}`;
+
+    // Simulate click on the anchor element
+    a.click();
+
+    // Clean up
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+  };
+
+  useEffect(() => {
     getSchollarship();
-  },[refresh])
+  }, [refresh])
   // useEffect(()=>{console.log(schoolarship)},[schoolarship])
   return (
     <div className='flex flex-col gap-2'>
@@ -93,6 +134,11 @@ export default function SchoolarshipAssistance({ user, accessToken }) {
             onCancel={handleCancel}
           /> : ''
         }
+        {
+          !isShowForm ? "" :
+            <AssistanceForm user={user} accessToken={accessToken} getSchollarship={getSchollarship} setIsShowForm={setIsShowForm} />
+        }
+
         <div className='py-5'>
           <p className='text-xl font-bold'>Requirements:</p>
         </div>
@@ -107,7 +153,9 @@ export default function SchoolarshipAssistance({ user, accessToken }) {
           </p>
         </div>
         <div className='flex justify-center p-5'>
-          <button className='bg-emerald-500 p-2 w-3/6 text-white font-bold rounded-md hover:bg-emerald-600 duration-200' onClick={(e) => setConfirm(true)}>Request</button>
+          <button className='bg-emerald-500 p-2 w-3/6 text-white font-bold rounded-md hover:bg-emerald-600 duration-200'
+            onClick={(e) => setIsShowForm(true)}>
+            Add Request</button>
         </div>
       </div>
       {/* table */}
@@ -116,32 +164,38 @@ export default function SchoolarshipAssistance({ user, accessToken }) {
           <p className='font-bold'>Schoolarship Requested List</p>
         </div>
         <div>
-          <table className='w-full table table-auto'>
+          <table className='w-full table table-auto text-xs'>
             <thead>
-              <tr className='bg-blue-50'>
+              <tr className='bg-blue-50 text-center'>
                 <td className='p-2'>ID</td>
                 <td>Application Letter</td>
                 <td>Grades</td>
                 <td>Family Tree</td>
                 <td>Date Requested</td>
-                <td>Status</td>
                 <td>Remarks</td>
+                <td>Status</td>
               </tr>
             </thead>
             <tbody>
               {
-                !schoolarship ? "":
-                schoolarship.map(data =>(
-                  <tr className='hover:bg-emerald-100'>
-                    <td className='p-2'>{data.id}</td>
-                    <td>{data.application_letter}</td>
-                    <td>{data.grades}</td>
-                    <td>{data.family_tree}</td>
-                    <td>{getSpecificDate(data.created_at)}</td>
-                    <td>{data.status}</td>
-                    <td>{data.remarks}</td>
-                  </tr>
-                ))
+                !schoolarship ? "" :
+                  schoolarship.map(data => (
+                    <tr className='hover:bg-emerald-100 text-center'>
+                      <td className='p-2'>{data.id}</td>
+                      <td onClick={(e) => handleDownload(data.application_letter, data.application_extension)}>
+                        <p className={`${data.application_letter ? 'hover:underline cursor-pointer text-blue-600' : ''}`}>
+                          {data.application_letter ? "Download" : "Not Submitted"}
+                        </p>
+                      </td>
+                      <td onClick={(e) => handleDownload(data.grades, data.grades_extension)}>
+                        <p className={`${data.grades ? 'hover:underline cursor-pointer text-blue-600' : ''}`}>{data.grades ? "Download" : "Not Submitted"}</p>
+                      </td>
+                      <td>{data.family_tree}</td>
+                      <td>{getSpecificDate(data.created_at)}</td>
+                      <td>{data.remarks}</td>
+                      <td>{data.status}</td>
+                    </tr>
+                  ))
               }
             </tbody>
           </table>
