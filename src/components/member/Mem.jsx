@@ -10,21 +10,45 @@ export default function Mem({ accessToken, user }) {
     const [selected, setSelected] = useState({});
     const printRef = React.useRef();
 
-    const handlePrint = useReactToPrint({
-        content: () => printRef.current,
-        pageStyle: `
-            @media print {
-                /* Hide the footer */
-                @page {
-                  size: auto;
-                  margin: 20mm;
-                }
-                body {
-                  margin: 0;
-                }
-              }
-            `,
-    });
+    const preparePrintData = () => {
+        let printData = '<style>';
+        printData += 'table {border-collapse: collapse; width: 100%; padding: 10px;}';
+        printData += 'th, td {padding: 8px; text-align: left; border-bottom: 1px solid #ddd;}';
+        printData += '.title {text-align: center; padding: 5px}';
+        printData += '</style>';
+        printData += '<h1 class="title">Member Accounts Report</h1>';
+        printData += '<table>';
+        printData += '<thead>';
+        printData += '<tr>';
+        Object.keys(member[0]).forEach(key => {
+          printData += `<th>${key}</th>`;
+        });
+        printData += '</tr>';
+        printData += '</thead>';
+        printData += '<tbody>';
+        member.forEach(data => {
+          printData += '<tr>';
+          Object.values(data).forEach(value => {
+            printData += `<td>${value}</td>`;
+          });
+          printData += '</tr>';
+        });
+        printData += '</tbody>';
+        printData += '</table>';
+        return printData;
+      };
+
+    const handlePrint = () => {
+        const printData = preparePrintData();
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write('<html><head><title>Print</title></head><body>');
+        printWindow.document.write('<pre>');
+        printWindow.document.write(printData);
+        printWindow.document.write('</pre>');
+        printWindow.document.write('</body></html>');
+        printWindow.document.close();
+        printWindow.print();
+    };
 
     // GET FUNCTION
     const getMember = async () => {

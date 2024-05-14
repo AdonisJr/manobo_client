@@ -8,6 +8,10 @@ import Pagination from '../../Pagination';
 import AssistanceForm from './AssistanceForm';
 
 export default function Medical({ user, accessToken }) {
+  const getCurrentDate = () => {
+    const current = new Date();
+    return current.toISOString().split('T')[0]; // Get current date in YYYY-MM-DD format
+  };
   const [showConfirm, setConfirm] = useState(false);
   const [refresh, setRefresh] = useState(false);
   const [schoolarship, setSchoolarship] = useState([]);
@@ -16,6 +20,8 @@ export default function Medical({ user, accessToken }) {
   const [isModalOpen, setModal] = useState(false)
   const [totalPages, setTotalPages] = useState(1)
   const [currentPage, setCurrentPage] = useState(1)
+  const [filter, setFilter] = useState("FOR APPROVAL");
+  const [filterDate, setFilterDate] = useState({ from: null, to: getCurrentDate() })
 
   // TOAST
   const showErrorMessage = (message) => {
@@ -30,6 +36,61 @@ export default function Medical({ user, accessToken }) {
       autoClose: 2000,
     });
   };
+
+  const preparePrintData = () => {
+    let printData = '<style>';
+    printData += 'table {border-collapse: collapse; width: 100%; padding: 10px;}';
+    printData += 'th, td {padding: 8px; text-align: left; border-bottom: 1px solid #ddd;}';
+    printData += '.title {text-align: center; padding: 5px}';
+    printData += '</style>';
+    printData += '<h1 class="title">Schoolarship Assistance Report</h1>';
+    printData += '<table>';
+    printData += '<thead>';
+    printData += '<tr>';
+    printData += '<th>ID</th>'
+    printData += '<th>Requested By</th>'
+    printData += '<th>Date Requested</th>'
+    printData += '<th>Last Update</th>'
+    printData += '<th>Remarks</th>'
+    printData += '<th>Status</th>'
+    printData += '</tr>';
+    printData += '</thead>';
+    printData += '<tbody>';
+    schoolarship.map(data => {
+      printData += '<tr>';
+      printData += `<td>${data.id}</td>`
+      printData += `<td>${data.first_name + " " + data.middle_name + " " + data.last_name} </td>`
+      printData += `<td>${getSpecificDate(data.created_at)}</td>`
+      printData += `<td>${getSpecificDate(data.updated_at)}</td>`
+      printData += `<td>${data.remarks}</td>`
+      printData += `<td>${data.status}</td>`
+      printData += '</tr>'
+    })
+    printData += '</tbody>';
+    printData += '</table>';
+    return printData;
+  };
+
+  const handlePrint = () => {
+    const printData = preparePrintData();
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write('<html><head><title>Print</title></head><body>');
+    printWindow.document.write('<pre>');
+    printWindow.document.write(printData);
+    printWindow.document.write('</pre>');
+    printWindow.document.write('</body></html>');
+    printWindow.document.close();
+    printWindow.print();
+  };
+
+  const statusOpt = [
+
+    { label: 'FOR APPROVAL', value: 'FOR APPROVAL' },
+    { label: 'PENDING', value: 'PENDING' },
+    { label: 'ON PROCESS', value: 'ON PROCESS' },
+    { label: 'COMPLETED', value: 'COMPLETED' },
+    { label: 'CANCELLED', value: 'CANCELLED' },
+  ]
 
   const handleConfirm = async () => {
     // Perform delete operation or call the delete function
@@ -72,7 +133,7 @@ export default function Medical({ user, accessToken }) {
 
   const getData = async () => {
     await axios
-      .get(`/medical/all`, {
+      .get(`/medical/all?filter=${filter}&dateFrom=${filterDate.from}&dateTo=${filterDate.to}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
@@ -131,7 +192,7 @@ export default function Medical({ user, accessToken }) {
 
   useEffect(() => {
     getData();
-  }, [refresh])
+  }, [refresh, filter, filterDate])
 
   return (
     <div className='flex flex-col gap-2'>
@@ -151,15 +212,55 @@ export default function Medical({ user, accessToken }) {
       }
       {/* table */}
       <div className='flex flex-col gap-2 bg-white p-5 rounded-lg shadow-md'>
-        <div>
+        <div className='flex justify-between pe-10'>
           <p className='font-bold text-lg text-slate-500'>Medical Requested List</p>
+          <button
+            className='flex gap-2 items-center hover:text-slate-600 duration-200'
+            onClick={handlePrint}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-printer-fill" viewBox="0 0 16 16">
+              <path d="M5 1a2 2 0 0 0-2 2v1h10V3a2 2 0 0 0-2-2zm6 8H5a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1" />
+              <path d="M0 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-1v-2a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v2H2a2 2 0 0 1-2-2zm2.5 1a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1" />
+            </svg>
+            Print
+          </button>
+        </div>
+        <div className='text-xs'>
+          <div className='flex items-center gap-2 ps-10'>
+            <p>Filter</p>
+            <div className='flex flex-col gap-2 ps-10 w-2/6'>
+              <p>
+                Type:
+              </p>
+              <Select
+                options={statusOpt}
+                value={{ label: filter, value: filter }}
+                onChange={(e) => setFilter(e.value)}
+              />
+            </div>
+            <div className='flex flex-col gap-1 w-2/6'>
+              <label className='ps-2'>Date From</label>
+              <input type="date"
+                className='py-1 px-2 border-2 border-neutral-500 w-full'
+                onChange={(e) => [setFilterDate({ ...filterDate, from: e.target.value })]}
+                value={filterDate.from}
+              />
+            </div>
+            <div className='flex flex-col gap-1 w-2/6'>
+              <label className='ps-2'>Date To</label>
+              <input type="date"
+                className='py-1 px-2 border-2 border-neutral-500 w-full'
+                onChange={(e) => setFilterDate({ ...filterDate, to: e.target.value })}
+                value={filterDate.to}
+              />
+            </div>
+          </div>
         </div>
         <div className='w-full overflow-x-scroll'>
           <table className='min-w-full table table-auto text-sm'>
             <thead>
               <tr className='bg-blue-50 text-center'>
                 <td className='p-2'>ID</td>
-                <td>Type</td>
                 <td>Requested By</td>
                 <td>Application Letter</td>
                 <td>Medical Abstract</td>
@@ -176,7 +277,6 @@ export default function Medical({ user, accessToken }) {
                   schoolarship.map(data => (
                     <tr className='hover:bg-emerald-100 text-center'>
                       <td className='p-2'>{data.id}</td>
-                      <td>{data.type}</td>
                       <td>{data.first_name + ", " + data.last_name}</td>
                       <td onClick={(e) => handleDownload(data.application_letter, data.application_extension)}>
                         <p className={`${data.application_letter ? 'hover:underline cursor-pointer text-blue-600' : ''}`}>
