@@ -43,11 +43,11 @@ export default function StaForm({ setSelected, setModal, selected, accessToken }
         }
         if (selected.id) {
           await axios
-            .put(`/user?id=${credentials.id}`,{
+            .put(`/user?id=${credentials.id}`, credentials,{
                 headers: {
                     Authorization: `Bearer ${accessToken}`,
                 },
-            }, credentials)
+            })
             .then((res) => {
               showSuccessMessage(res.data.message)
               setTimeout(() => { 
@@ -61,11 +61,11 @@ export default function StaForm({ setSelected, setModal, selected, accessToken }
             })
         } else {
           await axios
-            .post(`/user`,{
+            .post(`/user`, credentials, {
                 headers: {
                     Authorization: `Bearer ${accessToken}`,
                 },
-            }, credentials)
+            })
             .then((res) => {
               showSuccessMessage(res.data.message)
               setTimeout(() => { setModal(false); setSelected({}) }, 2000)
