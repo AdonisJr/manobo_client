@@ -73,7 +73,7 @@ export default function MemTable({ member, setSelected, setModal, selected, acce
                 : ""
             }
             <table className='table-auto w-full' ref={printRef}>
-                <thead className='bg-blue-100'>
+                <thead className='bg-blue-100 text-xs'>
                     <tr>
                         <th className='p-2'>ID</th>
                         <th>First Name</th>
@@ -82,13 +82,14 @@ export default function MemTable({ member, setSelected, setModal, selected, acce
                         <th>Email</th>
                         <th>Barangay</th>
                         <th>Gender</th>
+                        <th>Special Skills</th>
                         <th>Phone Number</th>
                         <th>Role</th>
                         <th>Other Information</th>
                         <th>Action</th>
                     </tr>
                 </thead>
-                <tbody className='text-center text-sm'>
+                <tbody className='text-center text-xs'>
                     {
                         !member ? <tr className='w-full text-center'>No Record.</tr> :
                             member.map((data) => (
@@ -100,6 +101,7 @@ export default function MemTable({ member, setSelected, setModal, selected, acce
                                     <td>{data.email}</td>
                                     <td>{data.barangay}</td>
                                     <td>{data.gender}</td>
+                                    <td>{data.special_skills}</td>
                                     <td>{data.phone_number}</td>
                                     <td>{data.role}</td>
                                     <td><p className='hover:underline cursor-pointer' onClick={(e) => [setInformation(true), setMemberSelected(data)]}>View</p></td>

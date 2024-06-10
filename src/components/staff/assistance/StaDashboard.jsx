@@ -2,12 +2,15 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import BarChartVisual from '../BarChartVisual';
 import LineChartVisual from '../LineChatVisual';
+import AreaChartVisual from '../AreaChartVisual';
+import PieChartVisual from '../PieChartVisual';
 
 export default function StaDashboard({ user, accessToken }) {
     const [members, setMembers] = useState([]);
     const [genderCounts, setGenderCounts] = useState();
     const [ageBrackets, setAgeBrackets] = useState([]);
     const [bracket, setBracket] = useState({});
+    const [otherInfoData, setOtherInfoData] = useState([])
 
 
     // GET FUNCTION
@@ -32,6 +35,20 @@ export default function StaDashboard({ user, accessToken }) {
             })
             .then((res) => {
                 setBracket(res.data.data)
+            });
+
+    };
+
+    const getOtherInfo = async () => {
+        await axios
+            .get(`/otherInfo`, {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                },
+            })
+            .then((res) => {
+                setOtherInfoData(res.data.data)
+                console.log(res.data.data)
             });
 
     };
@@ -93,6 +110,7 @@ export default function StaDashboard({ user, accessToken }) {
     useEffect(() => {
         getMember();
         getBracket();
+        getOtherInfo();
     }, [])
     return (
         <div className='flex flex-col gap-5'>
@@ -203,14 +221,26 @@ export default function StaDashboard({ user, accessToken }) {
                 <div className='bg-slate-700 rounded-lg p-4 w-9/12 text-white flex flex-col justify-center'>
                     <p className='text-lg font-bold'>Member Count Per Year</p>
                     <p className='py-2 text-sm'> An analysis showing the distribution of user registrations across different years</p>
+
                     <BarChartVisual members={members} />
                 </div>
-                
+
             </div>
             <div className='bg-slate-700 rounded-lg p-4 w-full text-white flex gap-5 flex-col justify-center'>
-                <p className='text-lg font-bold text-slate-300 font-semibold'>Line Chart Visual | <span className='text-white'>Age Bracket</span></p>
-                    <LineChartVisual data={bracket} />
+                <p className='text-lg text-slate-300 font-semibold'>Line Chart Visual | <span className='text-white'>Age Bracket</span></p>
+                <LineChartVisual data={bracket} />
+            </div>
+            <div className='bg-slate-700 rounded-lg p-4 w-full text-white flex gap-5 flex-col justify-center'>
+                <p className='text-lg text-slate-300 font-semibold'>Area Chart Visual | <span className='text-white'>Education Status</span></p>
+                <AreaChartVisual data={otherInfoData} />
+            </div>
+            <div className='bg-slate-700 rounded-lg p-4 w-full text-white flex gap-5 flex-col justify-center'>
+                <p className='text-lg text-slate-300 font-semibold'>Pie Chart Visual | <span className='text-white'>Population Graph Across Different Tribes</span></p>
+
+                <div className='flex justify-center'>
+                    <PieChartVisual data={otherInfoData} />
                 </div>
+            </div>
         </div>
     )
 }

@@ -6,6 +6,16 @@ import jsPDF from 'jspdf';
 export default function RecommendationReport({ printSelected, user, setPrintSelected, setIsPrintOpen }) {
     const printRef = React.useRef();
     const [currentDate, setCurrentDate] = useState('');
+    const date = new Date()
+    const day = date.getDate();
+    const year = date.getFullYear();
+    const monthNames = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+    ];
+    const getMonthName = () => {
+        return monthNames[date.getMonth()];
+    };
 
     useEffect(() => {
         const formatDate = () => {
@@ -84,27 +94,21 @@ export default function RecommendationReport({ printSelected, user, setPrintSele
                 <div className='flex flex-col items-center relative pb-5 bg-white min-h-full w-4/6 z-40' ref={printRef} id="pdf-content">
 
 
-                    <div className='text-center pb-10 font-sans font-bold z-50 mt-10'>
-                        <p className='text-2xl'>Certificate of Recommendation</p>
+                <div className='flex gap-2 items-center text-center pb-10 font-sans font-bold z-50 mt-10'>
+                        <p className='text-2xl'>CERTIFICATE OF RECOMMENDATION</p>
                     </div>
                     <div className='flex flex-col gap-5 px-40 text-xs z-40'>
                         <p className='z-50'>
-                            This is to certify that <span className='font-bold px-2'>{name}</span> of the Manobo Tribe has been a devoted
-                            guardian of Manobo heritage and culture. Through their unwavering commitment and passion, they have played
-                            an instrumental role in preserving and promoting the rich cultural traditions of the Manobo people.
+                            <span className='font-bold'>This is to certify</span> that <span className='font-bold px-2 underline'>{name}</span> ears of age,
+                            married/single and bonafide resident of <span className='font-semibold underline'>{user.barangay} </span>, Bunawan, Agusan del Sur
+                            belongs to the Manobo Tribe of the National Cultural Communities (non-muslim).
                         </p>
                         <p className='py-3 z-50'>
-                            <span className='font-bold pe-2'>{name}</span> has actively engaged in activities aimed at safeguarding Manobo heritage.
-                            Their dedication to preserving the unique customs,
-                            language, and arts of the Manobo Tribe has been a source of inspiration to all.
+                            This certification is being issued to an above-named person for whatever legal purpose it may serve her best.
                         </p>
                         <p className='py-3 z-50'>
-                            In recognition of their outstanding efforts and unwavering dedication, we proudly present this certificate to
-                            <span className='font-bold px-2'>{name}</span>. May their continued commitment to Manobo heritage serve as a beacon of
-                            pride and cultural resilience for generations to come.
-                        </p>
-                        <p>
-                            Presented this {currentDate}
+                            GIVEN this <span className='underline font-semibold'>{day}</span> of <span className='underline font-semibold'>{getMonthName()},</span> {year}
+                            at the Office of the Municipal Tribal Chieftain, BMADMCI Office, Purok 7, San Teodoro, Bunawan, Agusan del Sur.
                         </p>
                         <p>
                             Signed,
@@ -113,9 +117,10 @@ export default function RecommendationReport({ printSelected, user, setPrintSele
                             __________________
                         </p>
                         <p className='font-semibold'>
-                            {staffName}
+                            ROLITO S. PEÑALOGA, SR.
                             <p className='font-normal'>{user.role.toUpperCase()}</p>
-                            <p className='font-normal'>Manobo Heritage Center</p>
+                            <p className='font-normal'>Municipal Tribal Chieftain</p>
+                            <p className='font-normal'>BMADMCI Chairman</p>
                         </p>
 
                     </div>

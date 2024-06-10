@@ -66,7 +66,7 @@ export default function SchoolarshipAssistance({ user, accessToken }) {
 
   const getSchollarship = async () => {
     const res = await axios
-      .get(`/schoolarship`, {
+      .get(`/schoolarship?user_id=${user.id}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },

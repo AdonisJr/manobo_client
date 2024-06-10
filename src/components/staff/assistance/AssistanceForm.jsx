@@ -34,12 +34,16 @@ export default function AssistanceForm({ user, accessToken, setModal, getAnnounc
     const statusOpt = type === 'schoolarship' ?
         [
             { label: 'FOR APPROVAL', value: 'FOR APPROVAL' },
+            { label: 'APPROVED', value: 'APPROVED' },
+            { label: 'DISAPPROVED', value: 'DISAPPROVED' },
             { label: 'TERMINATED', value: 'TERMINATED' },
             { label: 'GRADUATED', value: 'GRADUATED' },
             { label: 'ON GOING', value: 'ON GOING' },
         ] :
         [
             { label: 'PENDING', value: 'PENDING' },
+            { label: 'APPROVED', value: 'APPROVED' },
+            { label: 'DISAPPROVED', value: 'DISAPPROVED' },
             { label: 'ON PROCESS', value: 'ON PROCESS' },
             { label: 'COMPLETED', value: 'COMPLETED' },
             { label: 'CANCELLED', value: 'CANCELLED' },

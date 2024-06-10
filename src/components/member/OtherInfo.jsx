@@ -67,6 +67,11 @@ export default function OtherInfo({ setInformation, isAdmin, user, setMemberSele
         { label: 'male', value: "male" },
         { label: 'female', value: 'female' }
     ]
+    const statusOpt = [
+        { label: 'ENROLLED', value: "ENROLLED" },
+        { label: 'GRADUATED', value: 'GRADUATED' },
+        { label: 'DROPPED OUT', value: 'DROPPED OUT' }
+    ]
     // TOAST
     const showErrorMessage = (message) => {
         toast.error(message, {
@@ -397,6 +402,16 @@ export default function OtherInfo({ setInformation, isAdmin, user, setMemberSele
                     {/* header2 */}
                     <div className=''>
                         <p className='text-lg font-semibold text-emerald-500'>Other Information</p>
+                        <div className='border-2 border-slate-200 py-4 px-2 flex gap-2 items-center'>
+                            Education Status
+                            <Select
+                                options={statusOpt}
+                                onChange={(e) => setCredentials({ ...credentials, education_status: e.value })}
+                                value={{ label: credentials.education_status, value: credentials.education_status }}
+                                isSearchable={false}
+                                className='w-2/6'
+                            />
+                        </div>
                     </div>
                     {/* sec */}
                     <div className='flex gap-2 py-2 px-5 border-b-2 border-slate-200'>

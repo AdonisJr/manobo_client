@@ -66,7 +66,7 @@ export default function SchoolarshipAssistance({ user, accessToken }) {
 
   const getCertification = async () => {
     const res = await axios
-      .get(`/certificate`, {
+      .get(`/certificate?user_id=${user.id}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },

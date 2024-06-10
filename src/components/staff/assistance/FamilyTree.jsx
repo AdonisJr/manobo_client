@@ -9,6 +9,9 @@ import Select from 'react-select';
 import OtherInfo from '../../member/OtherInfo';
 import { useReactToPrint } from 'react-to-print';
 
+import Tree from 'react-d3-tree';
+import FamilyTreeNode from './FamilyTreeNode';
+
 export default function FamilyTree({ user, accessToken }) {
   const [credentials, setCredentials] = useState();
   const [members, setMembers] = useState([]);
@@ -24,22 +27,7 @@ export default function FamilyTree({ user, accessToken }) {
   const [showOtherInfo, setShowOtherInfo] = useState(false);
   const [memberSelected, setMemberSelected] = useState([]);
   const printRef = React.useRef();
-
-  // const handlePrint = useReactToPrint({
-  //   content: () => printRef.current,
-  //   pageStyle: `
-  //           @media print {
-  //               /* Hide the footer */
-  //               @page {
-  //                 size: auto;
-  //                 margin: 20mm;
-  //               }
-  //               body {
-  //                 margin: 0;
-  //               }
-  //             }
-  //           `,
-  // });
+  const [isTableView, setIsTableView] = useState(true);
 
   const preparePrintData = () => {
     let printData = '<style>';
@@ -65,7 +53,7 @@ export default function FamilyTree({ user, accessToken }) {
     printData += '<tbody>';
     datas.map(data => {
       printData += '<tr>';
-      printData += `<td>${data.id}</td>`
+      printData += `<td>${data.u_id}</td>`
       printData += `<td>${data.first_name + " " + data.middle_name + " " + data.last_name} </td>`
       printData += `<td>${data.email}</td>`
       printData += `<td>${data.relationship}</td>`
@@ -186,22 +174,6 @@ export default function FamilyTree({ user, accessToken }) {
       }).catch(error => {
         console.log(error)
       })
-    // await axios
-    //   .get(`/user/all`, {
-    //     headers: {
-    //       Authorization: `Bearer ${accessToken}`,
-    //     },
-    //     params: {
-    //       id: details.id,
-    //       middle_name: details.middle_name,
-    //       last_name: details.last_name,
-
-    //     }
-    //   }).then(res => {
-    //     setDatas(res.data.data)
-    //   }).catch(error => {
-    //     console.log(error)
-    //   })
   }
 
   useEffect(() => {
@@ -231,11 +203,11 @@ export default function FamilyTree({ user, accessToken }) {
       {/* table */}
       <div className='flex flex-col gap-2 bg-white p-5 rounded-lg shadow-md'>
         <div>
-          <p className='font-bold text-lg text-slate-500'>Family Tracer Management</p>
+          <p className='font-bold text-lg text-slate-500'>Family Tracers Management</p>
         </div>
         <div className='py-2'>
           <label className='ps-2'>
-            Search Member
+            Search Members
           </label>
           <div className='flex gap-2 items-center justify-between pe-5'>
             <div className='flex gap-2 items-center w-3/6'>
@@ -269,7 +241,10 @@ export default function FamilyTree({ user, accessToken }) {
           </div>
 
         </div>
-        <div className='w-full overflow-x-scroll'>
+        <div>
+          <input type='checkbox' checked={isTableView} onChange={(e) => setIsTableView(e.target.checked)} /> Table View
+        </div>
+        <div className={`w-full overflow-x-scroll ${isTableView ? '' : 'hidden'}`}>
           <table className='min-w-full table table-auto text-sm' ref={printRef}>
             <thead>
               <tr className='bg-blue-50 text-center'>
@@ -287,7 +262,7 @@ export default function FamilyTree({ user, accessToken }) {
                 !datas ? "" :
                   datas.map(data => (
                     <tr className='hover:bg-emerald-100 text-center'>
-                      <td className='p-1'>{data.id}</td>
+                      <td className='p-1'>{data.u_id}</td>
                       <td className='p-1'>{`${data.first_name} ${data.middle_name} ${data.last_name}`}</td>
                       <td className='p-1'>{data.email}</td>
                       <td className='p-1'>{data.relationship}</td>
@@ -299,11 +274,18 @@ export default function FamilyTree({ user, accessToken }) {
               }
             </tbody>
           </table>
-
           <div className='flex gap-5 justify-center w-full'>
             <Pagination currentPage={currentPage} totalPages={totalPages} maxDisplay={9} onPageChange={setCurrentPage} />
           </div>
+          
         </div>
+        <div className={`flex justify-center ${isTableView ? 'hidden' : ''}`}>
+            {
+              !datas ? "" :
+                <FamilyTreeNode node={datas} userDetails={credentials} accessToken={accessToken} showOtherInfo={showOtherInfo}
+                setShowOtherInfo={setShowOtherInfo} memberSelected={memberSelected} setMemberSelected={setMemberSelected} />
+            }
+          </div>
       </div>
     </div>
 

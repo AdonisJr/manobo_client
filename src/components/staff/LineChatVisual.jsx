@@ -2,6 +2,7 @@ import React from 'react'
 import { LineChart, Line, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 export default function LineChartVisual({ data }) {
+    console.log(data)
     return (
         <ResponsiveContainer width="100%" height={300}>
             <LineChart width="100%" height={300} className='w-full h-full' data={data}>

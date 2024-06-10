@@ -66,7 +66,7 @@ export default function SchoolarshipAssistance({ user, accessToken }) {
 
   const getMedical = async () => {
     const res = await axios
-      .get(`/medical`, {
+      .get(`/medical?user_id=${user.id}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },

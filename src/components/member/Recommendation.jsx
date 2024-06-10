@@ -4,12 +4,12 @@ import "react-toastify/dist/ReactToastify.css";
 import Select from "react-select";
 import axios from 'axios';
 import CustomConfirmModal from '../CustomConfirmModal';
-import RecommendationForm from './RecommendationForm';
+import CertificationForm from './CertificationForm';
 
-export default function Recommendation({ user, accessToken }) {
+export default function SchoolarshipAssistance({ user, accessToken }) {
   const [showConfirm, setConfirm] = useState(false);
   const [refresh, setRefresh] = useState(false);
-  const [recommendations, setRecommendations] = useState([])
+  const [schoolarship, setSchoolarship] = useState([])
   const [isShowForm, setIsShowForm] = useState(false);
 
   // TOAST
@@ -29,7 +29,7 @@ export default function Recommendation({ user, accessToken }) {
   const handleConfirm = async () => {
     // Perform delete operation or call the delete function
     await axios
-      .post(`/assistance`, { user_id: user.id, type: 'recommendation' }, {
+      .post(`/assistance`, { user_id: user.id, type: 'certification' }, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
@@ -64,15 +64,15 @@ export default function Recommendation({ user, accessToken }) {
     return longDate;
   };
 
-  const getRecommendations = async () => {
+  const getCertification = async () => {
     const res = await axios
-      .get(`/recommendation`, {
+      .get(`/recommendation?user_id=${user.id}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
       })
       .then((res) => {
-        setRecommendations(res.data.data)
+        setSchoolarship(res.data.data)
       }).catch(error => {
         console.log(error.response.data.error + error.response.data.message)
       })
@@ -119,7 +119,7 @@ export default function Recommendation({ user, accessToken }) {
   };
 
   useEffect(() => {
-    getRecommendations();
+    getCertification();
   }, [refresh])
   // useEffect(()=>{console.log(schoolarship)},[schoolarship])
   return (
@@ -137,7 +137,7 @@ export default function Recommendation({ user, accessToken }) {
         }
         {
           !isShowForm ? "" :
-            <RecommendationForm user={user} accessToken={accessToken} getRecommendations={getRecommendations} setIsShowForm={setIsShowForm} />
+            <CertificationForm user={user} accessToken={accessToken} getCertification={getCertification} setIsShowForm={setIsShowForm} />
         }
         <div className='py-5'>
           <p className='text-xl font-bold'>Requirements:</p>
@@ -166,7 +166,7 @@ export default function Recommendation({ user, accessToken }) {
               <tr className='bg-blue-50'>
                 <td className='p-2'>ID</td>
                 <td>Application Letter</td>
-                <td className='p-2'>Recommendation</td>
+                <td>Certificate</td>
                 <td>Family Tree</td>
                 <td>Date Requested</td>
                 <td>Remarks</td>
@@ -175,8 +175,8 @@ export default function Recommendation({ user, accessToken }) {
             </thead>
             <tbody>
               {
-                !recommendations ? "" :
-                  recommendations.map(data => (
+                !schoolarship ? "" :
+                  schoolarship.map(data => (
                     <tr className='hover:bg-emerald-100'>
                       <td className='p-2'>{data.id}</td>
                       <td onClick={(e) => handleDownload(data.application_letter, data.application_extension)}>

@@ -66,7 +66,7 @@ export default function SchoolarshipAssistance({ user, accessToken }) {
 
   const getBurials = async () => {
     const res = await axios
-      .get(`/burial`, {
+      .get(`/burial?user_id=${user.id}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
